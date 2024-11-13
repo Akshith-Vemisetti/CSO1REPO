@@ -4,49 +4,49 @@
 struct Node {
     int data;
     struct Node* next;
+    struct Node* prev;
 };
 
-void swap(int* a, int* b) {
-    int temp = *a;
-    *a = *b;
-    *b = temp;
+struct Node* lastNode(struct Node* head) {
+    while (head && head->next)
+        head = head->next;
+    return head;
 }
 
-struct Node* partitionLast(struct Node* start, struct Node* end) {
-    int pivot = end->data;
-    struct Node* p = start;
-    struct Node* q = start;
-    while (q != end) {
-        if (q->data < pivot) {
-            swap(&(p->data), &(q->data));
-            p = p->next;
+struct Node* partition(struct Node* low, struct Node* high) {
+    int pivot = high->data;
+    struct Node* i = low->prev;
+    for (struct Node* j = low; j != high; j = j->next) {
+        if (j->data <= pivot) {
+            i = (i == NULL) ? low : i->next;
+            int temp = i->data;
+            i->data = j->data;
+            j->data = temp;
         }
-        q = q->next;
     }
-    swap(&(p->data), &(end->data));
-    return p;
+    i = (i == NULL) ? low : i->next;
+    int temp = i->data;
+    i->data = high->data;
+    high->data = temp;
+    return i;
 }
 
-void quickSortRec(struct Node* start, struct Node* end) {
-    if (start != end && start != end->next) {
-        struct Node* pivot = partitionLast(start, end);
-        quickSortRec(start, pivot);
-        quickSortRec(pivot->next, end);
+void quickSort(struct Node* low, struct Node* high) {
+    if (high && low != high && low != high->next) {
+        struct Node* p = partition(low, high);
+        quickSort(low, p->prev);
+        quickSort(p->next, high);
     }
-}
-
-void quickSort(struct Node* head) {
-    struct Node* end = head;
-    while (end->next)
-        end = end->next;
-    quickSortRec(head, end);
 }
 
 void push(struct Node** head_ref, int new_data) {
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = new_data;
     new_node->next = (*head_ref);
-    (*head_ref) = new_node;
+    new_node->prev = NULL;
+    if (*head_ref != NULL)
+        (*head_ref)->prev = new_node;
+    *head_ref = new_node;
 }
 
 void printList(struct Node* node) {
@@ -59,11 +59,12 @@ void printList(struct Node* node) {
 
 int main() {
     struct Node* head = NULL;
-    push(&head, 10);
-    push(&head, 7);
-    push(&head, 8);
     push(&head, 5);
-    quickSort(head);
+    push(&head, 20);
+    push(&head, 4);
+    push(&head, 3);
+    struct Node* last = lastNode(head);
+    quickSort(head, last);
     printList(head);
     return 0;
 }

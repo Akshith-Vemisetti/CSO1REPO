@@ -4,13 +4,14 @@
 struct Node {
     int data;
     struct Node* next;
+    struct Node* prev;
 };
 
 void bubbleSort(struct Node* head) {
+    if (!head) return;
+    int swapped;
     struct Node* current;
     struct Node* last = NULL;
-    int swapped;
-    if (!head) return;
     do {
         swapped = 0;
         current = head;
@@ -31,7 +32,10 @@ void push(struct Node** head_ref, int new_data) {
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = new_data;
     new_node->next = (*head_ref);
-    (*head_ref) = new_node;
+    new_node->prev = NULL;
+    if (*head_ref != NULL)
+        (*head_ref)->prev = new_node;
+    *head_ref = new_node;
 }
 
 void printList(struct Node* node) {

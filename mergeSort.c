@@ -4,51 +4,53 @@
 struct Node {
     int data;
     struct Node* next;
+    struct Node* prev;
 };
 
-struct Node* sortedMerge(struct Node* a, struct Node* b) {
-    if (!a) return b;
-    if (!b) return a;
-    if (a->data <= b->data) {
-        a->next = sortedMerge(a->next, b);
-        return a;
+struct Node* merge(struct Node* first, struct Node* second) {
+    if (!first) return second;
+    if (!second) return first;
+    if (first->data < second->data) {
+        first->next = merge(first->next, second);
+        first->next->prev = first;
+        first->prev = NULL;
+        return first;
     } else {
-        b->next = sortedMerge(a, b->next);
-        return b;
+        second->next = merge(first, second->next);
+        second->next->prev = second;
+        second->prev = NULL;
+        return second;
     }
 }
 
-void splitList(struct Node* source, struct Node** front, struct Node** back) {
-    struct Node* fast = source->next;
-    struct Node* slow = source;
-    while (fast) {
-        fast = fast->next;
-        if (fast) {
-            slow = slow->next;
-            fast = fast->next;
-        }
+struct Node* split(struct Node* head) {
+    struct Node* fast = head;
+    struct Node* slow = head;
+    while (fast->next && fast->next->next) {
+        fast = fast->next->next;
+        slow = slow->next;
     }
-    *front = source;
-    *back = slow->next;
+    struct Node* temp = slow->next;
     slow->next = NULL;
+    return temp;
 }
 
 void mergeSort(struct Node** head_ref) {
-    struct Node* head = *head_ref;
-    struct Node* a;
-    struct Node* b;
-    if (!head || !head->next) return;
-    splitList(head, &a, &b);
-    mergeSort(&a);
-    mergeSort(&b);
-    *head_ref = sortedMerge(a, b);
+    if (!*head_ref || !(*head_ref)->next) return;
+    struct Node* second = split(*head_ref);
+    mergeSort(head_ref);
+    mergeSort(&second);
+    *head_ref = merge(*head_ref, second);
 }
 
 void push(struct Node** head_ref, int new_data) {
     struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
     new_node->data = new_data;
     new_node->next = (*head_ref);
-    (*head_ref) = new_node;
+    new_node->prev = NULL;
+    if (*head_ref != NULL)
+        (*head_ref)->prev = new_node;
+    *head_ref = new_node;
 }
 
 void printList(struct Node* node) {
@@ -61,10 +63,10 @@ void printList(struct Node* node) {
 
 int main() {
     struct Node* head = NULL;
-    push(&head, 15);
     push(&head, 10);
+    push(&head, 30);
+    push(&head, 15);
     push(&head, 5);
-    push(&head, 20);
     mergeSort(&head);
     printList(head);
     return 0;

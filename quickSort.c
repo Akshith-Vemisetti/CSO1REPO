@@ -1,40 +1,69 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-int partition(int arr[], int low, int high) {
-    int pivot = arr[high];
-    int i = (low - 1);
-    for (int j = low; j < high; j++) {
-        if (arr[j] < pivot) {
-            i++;
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+void swap(int* a, int* b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+struct Node* partitionLast(struct Node* start, struct Node* end) {
+    int pivot = end->data;
+    struct Node* p = start;
+    struct Node* q = start;
+    while (q != end) {
+        if (q->data < pivot) {
+            swap(&(p->data), &(q->data));
+            p = p->next;
         }
+        q = q->next;
     }
-    int temp = arr[i + 1];
-    arr[i + 1] = arr[high];
-    arr[high] = temp;
-    return (i + 1);
+    swap(&(p->data), &(end->data));
+    return p;
 }
 
-void quickSort(int arr[], int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high);
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
+void quickSortRec(struct Node* start, struct Node* end) {
+    if (start != end && start != end->next) {
+        struct Node* pivot = partitionLast(start, end);
+        quickSortRec(start, pivot);
+        quickSortRec(pivot->next, end);
     }
 }
 
-void printArray(int arr[], int n) {
-    for (int i = 0; i < n; i++)
-        printf("%d ", arr[i]);
+void quickSort(struct Node* head) {
+    struct Node* end = head;
+    while (end->next)
+        end = end->next;
+    quickSortRec(head, end);
+}
+
+void push(struct Node** head_ref, int new_data) {
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    new_node->data = new_data;
+    new_node->next = (*head_ref);
+    (*head_ref) = new_node;
+}
+
+void printList(struct Node* node) {
+    while (node != NULL) {
+        printf("%d ", node->data);
+        node = node->next;
+    }
     printf("\n");
 }
 
 int main() {
-    int arr[] = {10, 7, 8, 9, 1, 5};
-    int n = sizeof(arr) / sizeof(arr[0]);
-    quickSort(arr, 0, n - 1);
-    printArray(arr, n);
+    struct Node* head = NULL;
+    push(&head, 10);
+    push(&head, 7);
+    push(&head, 8);
+    push(&head, 5);
+    quickSort(head);
+    printList(head);
     return 0;
 }
